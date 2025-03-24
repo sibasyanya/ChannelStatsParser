@@ -14,3 +14,6 @@ log.txt
 # Python кеш
 __pycache__/
 *.pyc
+
+# Вспомогательные файлы
+update_git.bat

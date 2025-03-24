@@ -2,6 +2,7 @@ import re
 import time
 import random
 import logging
+import os
 from tqdm import tqdm
 import socks
 from telethon.sync import TelegramClient
@@ -12,38 +13,41 @@ from telethon.tl.functions.messages import GetHistoryRequest
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# ===== Загрузка конфигураций =====
+# ===== Базовая директория (где лежит сам скрипт) =====
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
-def load_config(file_path, separator=":"):
+def load_config(file_name, separator=":"):
+    file_path = os.path.join(base_dir, file_name)
     with open(file_path, "r", encoding="utf-8") as f:
         line = f.readline().strip()
         parts = line.split(separator)
         return [part.strip() for part in parts]
 
+# ===== Конфигурация =====
 api_id, api_hash = load_config("api_id_api_hash.txt")
 api_id = int(api_id)
 proxy_host, proxy_port, proxy_user, proxy_pass = load_config("proxy.txt")
 proxy = (socks.SOCKS5, proxy_host, int(proxy_port), True, proxy_user, proxy_pass)
 sheet_name, worksheet_name = load_config("sheet.txt")
 
-# ===== Файлы и Google Sheets =====
+google_json_keyfile = os.path.join(base_dir, 'projectyandexmess00001-1629a5334389.json')
+input_file = os.path.join(base_dir, 'input.txt')
+output_file = os.path.join(base_dir, 'output.txt')
+log_file = os.path.join(base_dir, 'log.txt')
 
-google_json_keyfile = 'projectyandexmess00001-1629a5334389.json'
-input_file = 'input.txt'
-output_file = 'output.txt'
-log_file = 'log.txt'
-
+# ===== Логгирование =====
 logging.basicConfig(filename=log_file, level=logging.INFO,
                     format='[%(asctime)s] %(levelname)s - %(message)s')
 
+# ===== Google Sheets =====
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name(google_json_keyfile, scope)
 gclient = gspread.authorize(credentials)
 sheet = gclient.open(sheet_name).worksheet(worksheet_name)
 
-# ===== Основной код =====
-
-with TelegramClient('anon_proxy', api_id, api_hash, proxy=proxy) as client:
+# ===== Запуск Telethon-клиента =====
+session_file = os.path.join(base_dir, 'anon_proxy.session')
+with TelegramClient(session_file, api_id, api_hash, proxy=proxy) as client:
     with open(input_file, 'r', encoding='utf-8') as f:
         links = [line.strip() for line in f if line.strip()]
 
