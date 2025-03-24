@@ -1,0 +1,16 @@
+
+# Конфиденциальные данные
+api_id_api_hash.txt
+proxy.txt
+sheet.txt
+input.txt
+projectyandexmess00001-1629a5334389.json
+*.session
+
+# Логи и выходные файлы
+output.txt
+log.txt
+
+# Python кеш
+__pycache__/
+*.pyc
